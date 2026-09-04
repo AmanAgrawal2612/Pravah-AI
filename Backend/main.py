@@ -17,6 +17,7 @@ app.add_middleware(
 pipeline = FloodNowcastingModel(target_location="Dadar, Mumbai, Maharashtra, India")
 pipeline.stage_3_build_drainage_network()
 pipeline.stage_4_train_flood_model()
+PRECOMPUTED_PREDICTIONS = pipeline.run_inference()
 
 class RouteRequest(BaseModel):
     start_lat: float
@@ -42,8 +43,7 @@ def get_network():
 
 @app.get("/api/flood-data")
 def get_flood_data():
-    predictions = pipeline.run_inference()
-    return {"predictions": predictions}
+    return {"predictions": PRECOMPUTED_PREDICTIONS}
 
 @app.post("/api/safe-route")
 def get_safe_route(request: RouteRequest):
@@ -73,3 +73,4 @@ def get_safe_route(request: RouteRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

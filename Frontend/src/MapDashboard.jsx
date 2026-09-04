@@ -30,6 +30,7 @@ export default function MapDashboard() {
   const [endPoint, setEndPoint] = useState(null);
   const [route, setRoute] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [backendDead, setBackendDead] = useState(false);
   const [selectMode, setSelectMode] = useState(null);
 
   const defaultCenter = [19.02, 72.84];
@@ -45,6 +46,7 @@ export default function MapDashboard() {
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
+        setBackendDead(true);
         setLoading(false);
       }
     }
@@ -68,18 +70,27 @@ export default function MapDashboard() {
     }
   };
 
-  const getEdgeColor = (edgeId) => {
-    // If predictions failed to load, show gray
+    const getEdgeColor = (edgeId) => {
     if (!predictions) return '#9ca3af'; 
-    const depth = predictions[edgeId]?.[timeStep] || 0;
-    if (depth > 15) return '#ef4444'; // Red
-    if (depth > 5) return '#f59e0b'; // Amber
-    return '#10b981'; // Green
+    const edgeData = predictions[edgeId];
+    if (!edgeData) return '#cbd5e1'; 
+    const depth = edgeData[timeStep];
+    if (depth === undefined || depth === null) return '#64748b'; 
+    if (depth > 15) return '#ef4444'; 
+    if (depth > 5) return '#f59e0b'; 
+    return '#10b981'; 
   };
 
   return (
     <div className="w-full h-full relative flex">
-      {loading && (
+      {backendDead && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-[2000] backdrop-blur-sm">
+          <AlertTriangle className="w-16 h-16 text-red-500 mb-4" />
+          <p className="text-xl font-bold text-gray-800">Backend Server is Dead or Loading</p>
+          <p className="text-sm text-gray-500 mt-2">Please wait for the backend to start, then refresh the page.</p>
+        </div>
+      )}
+      {loading && !backendDead && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-[2000] backdrop-blur-sm">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-xl font-bold text-gray-800">Initializing Urban Drainage Graph...</p>
@@ -97,7 +108,7 @@ export default function MapDashboard() {
           
           {network?.edges.map((edge) => (
             <Polyline
-              key={edge.id}
+              key={`${edge.id}-${timeStep}-${predictions ? "y" : "n"}`}
               positions={[edge.start, edge.end]}
               color={getEdgeColor(edge.id)}
               weight={getEdgeColor(edge.id) === '#ef4444' ? 6 : 4}
@@ -129,8 +140,8 @@ export default function MapDashboard() {
       </div>
 
       <div className="w-96 bg-white border-l border-gray-200 shadow-2xl flex flex-col z-[1000]">
-        <div className="p-6 overflow-y-auto h-full">
-          <div className="mb-8 bg-gray-50 p-5 rounded-2xl border border-gray-200">
+        <div className="p-4 flex-1 overflow-y-auto min-h-0">
+          <div className="mb-4 bg-gray-50 p-4 rounded-2xl border border-gray-200">
             <h3 className="font-semibold text-lg flex items-center text-gray-800 mb-4">
               <Clock className="w-5 h-5 mr-2 text-blue-600" />
               Nowcast Time Horizon
@@ -162,7 +173,7 @@ export default function MapDashboard() {
             </div>
           </div>
 
-          <div className="mb-8 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-2 gap-4">
             <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex flex-col items-center text-center">
               <CloudRain className="w-8 h-8 text-blue-500 mb-2" />
               <span className="text-2xl font-bold text-gray-800">12mm/h</span>
@@ -175,7 +186,7 @@ export default function MapDashboard() {
             </div>
           </div>
 
-          <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200">
+          <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200">
             <h3 className="font-semibold text-lg flex items-center text-gray-800 mb-4">
               <Navigation className="w-5 h-5 mr-2 text-purple-600" />
               Flood-Safe Routing
@@ -205,9 +216,9 @@ export default function MapDashboard() {
             </button>
           </div>
           
-          <div className="mt-8">
+          <div className="mt-4">
             <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Predicted Water Depth</h4>
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               <div className="flex items-center text-sm font-bold text-gray-700 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
                 <span className="w-4 h-4 rounded-full bg-emerald-500 mr-3"></span>
                 Safe (0-5cm)
@@ -224,7 +235,7 @@ export default function MapDashboard() {
               </div>
               <div className="flex items-center text-sm font-bold text-gray-500 bg-gray-100 p-2 rounded-lg border border-gray-200 border-dashed">
                 <span className="w-4 h-4 rounded-full bg-gray-400 mr-3"></span>
-                No Data (Loading...)
+                No Data (Debug: {predictions ? 'Loaded ' + Object.keys(predictions).length : 'Null'})
               </div>
             </div>
           </div>
@@ -233,3 +244,9 @@ export default function MapDashboard() {
     </div>
   );
 }
+
+
+
+
+
+
