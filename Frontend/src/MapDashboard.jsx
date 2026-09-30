@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Polyline, CircleMarker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import { Clock, Navigation, AlertTriangle, CloudRain, Droplets } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = 'https://pravah-ai-7ahu.onrender.com/api';
 
 function LocationSelector({ setStart, setEnd, selectMode, setSelectMode }) {
   useMapEvents({
@@ -197,13 +197,13 @@ export default function MapDashboard() {
                 onClick={() => setSelectMode('start')}
                 className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-colors ${startPoint ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
               >
-                {startPoint ? '✓ Start Picked' : 'Set Start'}
+                {startPoint ? 'âœ“ Start Picked' : 'Set Start'}
               </button>
               <button 
                 onClick={() => setSelectMode('end')}
                 className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-colors ${endPoint ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
               >
-                {endPoint ? '✓ End Picked' : 'Set Dest.'}
+                {endPoint ? 'âœ“ End Picked' : 'Set Dest.'}
               </button>
             </div>
             
@@ -244,6 +244,7 @@ export default function MapDashboard() {
     </div>
   );
 }
+
 
 
 
